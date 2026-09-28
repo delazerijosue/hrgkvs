@@ -1,6 +1,6 @@
 import { useCallback, useRef, type ChangeEvent, type MouseEvent, type PointerEvent } from 'react'
 import { useStore } from '../state/store'
-import { loadPhotoFile, panPhoto } from '../lib/photo'
+import { coverScale, loadPhotoFile, panPhoto } from '../lib/photo'
 import type { Rect } from '../lib/layout'
 import type { Frame } from '../types'
 import './PhotoLayer.css'
@@ -55,7 +55,7 @@ export function PhotoLayer({
       const dx = (e.clientX - dragState.current.lastX) / canvasZoom
       const dy = (e.clientY - dragState.current.lastY) / canvasZoom
       dragState.current = { lastX: e.clientX, lastY: e.clientY }
-      const next = panPhoto(photoArea, frame.photo.transform, dx, dy)
+      const next = panPhoto(photoArea, frame.photo.transform, dx, dy, frame.photo.naturalWidth, frame.photo.naturalHeight)
       updatePhotoTransform(frame.id, next)
     },
     [frame.id, frame.photo, photoArea, canvasZoom, updatePhotoTransform],
@@ -81,15 +81,25 @@ export function PhotoLayer({
       onPointerLeave={onPointerUp}
     >
       {frame.photo ? (
-        <img
-          src={frame.photo.src}
-          alt="Foto"
-          className="photo-layer__img"
-          draggable={false}
-          style={{
-            transform: `translate(${frame.photo.transform.panX}px, ${frame.photo.transform.panY}px) rotate(${frame.photo.transform.rotation}deg) scale(${frame.photo.transform.scale})`,
-          }}
-        />
+        (() => {
+          const base = coverScale(photoArea, frame.photo.naturalWidth, frame.photo.naturalHeight)
+          const w = frame.photo.naturalWidth * base
+          const h = frame.photo.naturalHeight * base
+          const { panX, panY, rotation, scale } = frame.photo.transform
+          return (
+            <img
+              src={frame.photo.src}
+              alt="Foto"
+              className="photo-layer__img"
+              draggable={false}
+              style={{
+                width: `${w}px`,
+                height: `${h}px`,
+                transform: `translate(-50%, -50%) translate(${panX}px, ${panY}px) rotate(${rotation}deg) scale(${scale})`,
+              }}
+            />
+          )
+        })()
       ) : (
         <button className="photo-layer__placeholder" onClick={openFileDialog} type="button">
           <span className="photo-layer__plus">+</span>

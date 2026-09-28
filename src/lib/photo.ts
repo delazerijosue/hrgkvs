@@ -43,29 +43,42 @@ function toRad(deg: number): number {
 }
 
 /**
- * Minimum scale so a rectangle matching `area`, rotated by `rotationDeg`
- * around its center, still fully covers `area` with zero pan. 1 at 0°
- * (no boost needed, matches the old no-rotation behavior exactly); grows
- * toward the area's own aspect ratio as rotation approaches 90°.
+ * Size (in area-local px) of the image at zoom=1: uniformly scaled so it
+ * just covers `area` at rotation 0 (matches CSS `object-fit: cover`) —
+ * NOT necessarily the same aspect ratio as `area` itself, so it must be
+ * tracked separately from the area's own width/height (see `coverScale`).
  */
-function minCoverScale(area: Rect, rotationDeg: number): number {
+function coverSize(area: Rect, naturalWidth: number, naturalHeight: number): { w: number; h: number } {
+  const base = coverScale(area, naturalWidth, naturalHeight)
+  return { w: naturalWidth * base, h: naturalHeight * base }
+}
+
+/**
+ * Minimum scale (zoom multiplier over `img`'s cover-fit size) so the image,
+ * rotated by `rotationDeg` around its center, still fully covers `area`
+ * with zero pan. 1 at 0° (no boost needed, matches the old no-rotation
+ * behavior exactly); grows as rotation approaches 90° and/or the image's
+ * own aspect ratio diverges further from the area's.
+ */
+function minCoverScale(area: Rect, rotationDeg: number, img: { w: number; h: number }): number {
   const rad = toRad(rotationDeg)
   const c = Math.abs(Math.cos(rad))
   const s = Math.abs(Math.sin(rad))
-  const ratio = Math.max(area.width / area.height, area.height / area.width)
-  return c + ratio * s
+  const marginX = (area.width / 2) * c + (area.height / 2) * s
+  const marginY = (area.width / 2) * s + (area.height / 2) * c
+  return Math.max((2 * marginX) / img.w, (2 * marginY) / img.h)
 }
 
 /**
  * How far the scaled+rotated image can be panned, expressed in the image's
  * OWN (rotated) local axes, before a gap would appear on that axis.
  */
-function localPanBounds(area: Rect, scale: number, rotationDeg: number): { x: number; y: number } {
+function localPanBounds(area: Rect, scale: number, rotationDeg: number, img: { w: number; h: number }): { x: number; y: number } {
   const rad = toRad(rotationDeg)
   const c = Math.abs(Math.cos(rad))
   const s = Math.abs(Math.sin(rad))
-  const halfW = (scale * area.width) / 2
-  const halfH = (scale * area.height) / 2
+  const halfW = (scale * img.w) / 2
+  const halfH = (scale * img.h) / 2
   const marginX = (area.width / 2) * c + (area.height / 2) * s
   const marginY = (area.width / 2) * s + (area.height / 2) * c
   return { x: Math.max(0, halfW - marginX), y: Math.max(0, halfH - marginY) }
@@ -87,10 +100,16 @@ function fromLocal(x: number, y: number, rotationDeg: number): { x: number; y: n
   return { x: x * cos - y * sin, y: x * sin + y * cos }
 }
 
-export function clampPan(area: Rect, transform: PhotoTransform): PhotoTransform {
+export function clampPan(
+  area: Rect,
+  transform: PhotoTransform,
+  naturalWidth: number,
+  naturalHeight: number,
+): PhotoTransform {
+  const img = coverSize(area, naturalWidth, naturalHeight)
   const rotation = transform.rotation
-  const scale = Math.max(minCoverScale(area, rotation), transform.scale)
-  const bounds = localPanBounds(area, scale, rotation)
+  const scale = Math.max(minCoverScale(area, rotation, img), transform.scale)
+  const bounds = localPanBounds(area, scale, rotation, img)
   const local = toLocal(transform.panX, transform.panY, rotation)
   const clampedLocal = { x: clamp(local.x, -bounds.x, bounds.x), y: clamp(local.y, -bounds.y, bounds.y) }
   const { x: panX, y: panY } = fromLocal(clampedLocal.x, clampedLocal.y, rotation)
@@ -98,18 +117,37 @@ export function clampPan(area: Rect, transform: PhotoTransform): PhotoTransform 
 }
 
 /** Drags the image by (dx, dy) area-local px, clamped to stay gap-free. */
-export function panPhoto(area: Rect, transform: PhotoTransform, dx: number, dy: number): PhotoTransform {
-  return clampPan(area, { ...transform, panX: transform.panX + dx, panY: transform.panY + dy })
+export function panPhoto(
+  area: Rect,
+  transform: PhotoTransform,
+  dx: number,
+  dy: number,
+  naturalWidth: number,
+  naturalHeight: number,
+): PhotoTransform {
+  return clampPan(area, { ...transform, panX: transform.panX + dx, panY: transform.panY + dy }, naturalWidth, naturalHeight)
 }
 
 /** Changes zoom in place — the center stays fixed because scaling is anchored there. */
-export function zoomPhoto(area: Rect, transform: PhotoTransform, newScale: number): PhotoTransform {
-  return clampPan(area, { ...transform, scale: newScale })
+export function zoomPhoto(
+  area: Rect,
+  transform: PhotoTransform,
+  newScale: number,
+  naturalWidth: number,
+  naturalHeight: number,
+): PhotoTransform {
+  return clampPan(area, { ...transform, scale: newScale }, naturalWidth, naturalHeight)
 }
 
 /** Changes rotation in place, around the same center — scale/pan are re-clamped so no gap appears at the new angle. */
-export function rotatePhoto(area: Rect, transform: PhotoTransform, newRotationDeg: number): PhotoTransform {
-  return clampPan(area, { ...transform, rotation: newRotationDeg })
+export function rotatePhoto(
+  area: Rect,
+  transform: PhotoTransform,
+  newRotationDeg: number,
+  naturalWidth: number,
+  naturalHeight: number,
+): PhotoTransform {
+  return clampPan(area, { ...transform, rotation: newRotationDeg }, naturalWidth, naturalHeight)
 }
 
 export interface LoadedPhoto {
@@ -143,16 +181,24 @@ export function loadPhotoFile(file: File): Promise<LoadedPhoto> {
  * duplicated-then-resized) frame keeps a similar crop instead of snapping
  * back to center.
  */
-export function preservePhotoFraction(oldArea: Rect, newArea: Rect, transform: PhotoTransform): PhotoTransform {
-  const oldBounds = localPanBounds(oldArea, transform.scale, transform.rotation)
+export function preservePhotoFraction(
+  oldArea: Rect,
+  newArea: Rect,
+  transform: PhotoTransform,
+  naturalWidth: number,
+  naturalHeight: number,
+): PhotoTransform {
+  const oldImg = coverSize(oldArea, naturalWidth, naturalHeight)
+  const oldBounds = localPanBounds(oldArea, transform.scale, transform.rotation, oldImg)
   const oldLocal = toLocal(transform.panX, transform.panY, transform.rotation)
   const fracX = oldBounds.x !== 0 ? oldLocal.x / oldBounds.x : 0
   const fracY = oldBounds.y !== 0 ? oldLocal.y / oldBounds.y : 0
 
-  const newBounds = localPanBounds(newArea, transform.scale, transform.rotation)
+  const newImg = coverSize(newArea, naturalWidth, naturalHeight)
+  const newBounds = localPanBounds(newArea, transform.scale, transform.rotation, newImg)
   const { x: panX, y: panY } = fromLocal(fracX * newBounds.x, fracY * newBounds.y, transform.rotation)
 
-  return clampPan(newArea, { ...transform, panX, panY })
+  return clampPan(newArea, { ...transform, panX, panY }, naturalWidth, naturalHeight)
 }
 
 /**

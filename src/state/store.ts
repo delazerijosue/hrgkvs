@@ -237,7 +237,13 @@ export const useStore = create<AppState>((set, get) => ({
         const { etiquetaAsset: etiqueta, taglineAsset: tagline } = resolveFrameAssets(f)
         const oldPhotoArea = computeLayout(f.widthPx, f.heightPx, f.overrides, etiqueta.aspectRatio, tagline.aspectRatio).photoArea
         const newPhotoArea = computeLayout(widthPx, heightPx, resized.overrides, etiqueta.aspectRatio, tagline.aspectRatio).photoArea
-        const transform = preservePhotoFraction(oldPhotoArea, newPhotoArea, resized.photo.transform)
+        const transform = preservePhotoFraction(
+          oldPhotoArea,
+          newPhotoArea,
+          resized.photo.transform,
+          resized.photo.naturalWidth,
+          resized.photo.naturalHeight,
+        )
         return { ...resized, photo: { ...resized.photo, transform } }
       }),
     }))

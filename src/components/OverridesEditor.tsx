@@ -78,22 +78,27 @@ export function OverridesEditor({ frame }: { frame: Frame }) {
 
   const onPhotoZoom = (value: number) => {
     if (!frame.photo || Number.isNaN(value)) return
-    const zoomed = zoomPhoto(layout.photoArea, frame.photo.transform, value)
+    const zoomed = zoomPhoto(layout.photoArea, frame.photo.transform, value, frame.photo.naturalWidth, frame.photo.naturalHeight)
     updatePhotoTransform(frame.id, zoomed)
   }
 
   const onPhotoRotate = (value: number) => {
     if (!frame.photo || Number.isNaN(value)) return
-    const rotated = rotatePhoto(layout.photoArea, frame.photo.transform, value)
+    const rotated = rotatePhoto(layout.photoArea, frame.photo.transform, value, frame.photo.naturalWidth, frame.photo.naturalHeight)
     updatePhotoTransform(frame.id, rotated)
   }
 
   const onPhotoPan = (axis: 'panX' | 'panY', displayValue: number) => {
     if (!frame.photo || Number.isNaN(displayValue)) return
-    const clamped = clampPan(layout.photoArea, {
-      ...frame.photo.transform,
-      [axis]: toPx(displayValue, unit),
-    })
+    const clamped = clampPan(
+      layout.photoArea,
+      {
+        ...frame.photo.transform,
+        [axis]: toPx(displayValue, unit),
+      },
+      frame.photo.naturalWidth,
+      frame.photo.naturalHeight,
+    )
     updatePhotoTransform(frame.id, clamped)
   }
 
