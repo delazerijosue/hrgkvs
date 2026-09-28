@@ -2,9 +2,10 @@ import { useMemo, useRef, type ChangeEvent } from 'react'
 import { useStore } from '../state/store'
 import { computeLayout, type TaglineVariant } from '../lib/layout'
 import { loadCustomAsset, isAcceptedAssetFile } from '../lib/customAssets'
-import { clampPan, loadPhotoFile, zoomPhoto, MAX_PHOTO_ZOOM } from '../lib/photo'
+import { clampPan, loadPhotoFile, rotatePhoto, zoomPhoto, MAX_PHOTO_ROTATION, MAX_PHOTO_ZOOM } from '../lib/photo'
 import { fromPx, toPx } from '../lib/units'
 import { resolveFrameAssets } from '../lib/frame'
+import { Accordion } from './Accordion'
 import type { Frame } from '../types'
 import './OverridesEditor.css'
 
@@ -81,6 +82,12 @@ export function OverridesEditor({ frame }: { frame: Frame }) {
     updatePhotoTransform(frame.id, zoomed)
   }
 
+  const onPhotoRotate = (value: number) => {
+    if (!frame.photo || Number.isNaN(value)) return
+    const rotated = rotatePhoto(layout.photoArea, frame.photo.transform, value)
+    updatePhotoTransform(frame.id, rotated)
+  }
+
   const onPhotoPan = (axis: 'panX' | 'panY', displayValue: number) => {
     if (!frame.photo || Number.isNaN(displayValue)) return
     const clamped = clampPan(layout.photoArea, {
@@ -92,8 +99,7 @@ export function OverridesEditor({ frame }: { frame: Frame }) {
 
   return (
     <div className="overrides-editor">
-      <fieldset>
-        <legend>Foto</legend>
+      <Accordion title="Foto">
         <p className="asset-status">{frame.photo ? 'Foto enviada' : 'Nenhuma foto enviada'}</p>
         <div className="asset-actions">
           <button type="button" className="secondary" onClick={() => photoInputRef.current?.click()}>
@@ -122,6 +128,27 @@ export function OverridesEditor({ frame }: { frame: Frame }) {
                 onChange={(e) => onPhotoZoom(Number(e.target.value))}
               />
             </div>
+            <div className="rotation-control">
+              <label>Rotação (°)</label>
+              <input
+                type="range"
+                min={-MAX_PHOTO_ROTATION}
+                max={MAX_PHOTO_ROTATION}
+                step={0.5}
+                value={frame.photo.transform.rotation}
+                onFocus={() => snapshot()}
+                onChange={(e) => onPhotoRotate(Number(e.target.value))}
+              />
+              <input
+                type="number"
+                step={1}
+                min={-MAX_PHOTO_ROTATION}
+                max={MAX_PHOTO_ROTATION}
+                value={Math.round(frame.photo.transform.rotation * 10) / 10}
+                onFocus={() => snapshot()}
+                onChange={(e) => onPhotoRotate(Number(e.target.value))}
+              />
+            </div>
             <div className="field-row">
               <div>
                 <label>Posição X</label>
@@ -146,10 +173,9 @@ export function OverridesEditor({ frame }: { frame: Frame }) {
             </div>
           </>
         )}
-      </fieldset>
+      </Accordion>
 
-      <fieldset>
-        <legend>Tamanho do frame</legend>
+      <Accordion title="Tamanho do frame">
         <div className="field-row">
           <div>
             <label>Largura ({unit})</label>
@@ -172,10 +198,9 @@ export function OverridesEditor({ frame }: { frame: Frame }) {
             />
           </div>
         </div>
-      </fieldset>
+      </Accordion>
 
-      <fieldset>
-        <legend>Etiqueta</legend>
+      <Accordion title="Etiqueta">
         <p className="asset-status">
           {etiquetaAsset.isCustom
             ? 'Etiqueta personalizada enviada (sem sombra)'
@@ -237,10 +262,9 @@ export function OverridesEditor({ frame }: { frame: Frame }) {
           }}
         />
         {layout.etiqueta.wideMode && <p className="hint">Etiqueta larga: movida para a parte inferior.</p>}
-      </fieldset>
+      </Accordion>
 
-      <fieldset>
-        <legend>Margens</legend>
+      <Accordion title="Margens">
         <div>
           <label>Superior / laterais ({unit})</label>
           <input
@@ -268,10 +292,9 @@ export function OverridesEditor({ frame }: { frame: Frame }) {
             clearOverride(frame.id, 'marginBottom')
           }}
         />
-      </fieldset>
+      </Accordion>
 
-      <fieldset>
-        <legend>Tagline</legend>
+      <Accordion title="Tagline">
         <p className="asset-status">
           {taglineAsset.isCustom ? 'Tagline personalizada enviada' : `Usando variante padrão ${variant.toUpperCase()}`}
         </p>
@@ -321,7 +344,7 @@ export function OverridesEditor({ frame }: { frame: Frame }) {
           show={!!frame.overrides.taglineWidth}
           onReset={() => clearOverride(frame.id, 'taglineWidth')}
         />
-      </fieldset>
+      </Accordion>
     </div>
   )
 }

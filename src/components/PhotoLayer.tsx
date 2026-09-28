@@ -87,7 +87,7 @@ export function PhotoLayer({
           className="photo-layer__img"
           draggable={false}
           style={{
-            transform: `translate(${frame.photo.transform.panX}px, ${frame.photo.transform.panY}px) scale(${frame.photo.transform.scale})`,
+            transform: `translate(${frame.photo.transform.panX}px, ${frame.photo.transform.panY}px) rotate(${frame.photo.transform.rotation}deg) scale(${frame.photo.transform.scale})`,
           }}
         />
       ) : (

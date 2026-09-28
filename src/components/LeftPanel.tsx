@@ -5,6 +5,7 @@ import { getFrameLabel } from '../lib/frame'
 import { loadPhotoFile } from '../lib/photo'
 import { exportFramePDF, exportFramePNG, exportFrameGuidesPDF } from '../lib/export'
 import { OverridesEditor } from './OverridesEditor'
+import { Accordion } from './Accordion'
 import './LeftPanel.css'
 
 export function LeftPanel() {
@@ -109,8 +110,7 @@ export function LeftPanel() {
         </button>
       </section>
 
-      <section className="left-panel__section">
-        <h2>Novo frame</h2>
+      <Accordion title="Novo frame">
         <form onSubmit={onSubmit} className="new-frame-form">
           <div className="field-row">
             <div>
@@ -141,43 +141,41 @@ export function LeftPanel() {
           </div>
           <button type="submit">+ Criar frame</button>
         </form>
-      </section>
+      </Accordion>
 
-      <section className="left-panel__section">
-        <label>Modo</label>
-        <div className="mode-toggle">
-          <button
-            type="button"
-            className={guidesMode ? 'secondary' : ''}
-            onClick={() => setGuidesMode(false)}
-          >
-            Design
-          </button>
-          <button
-            type="button"
-            className={guidesMode ? '' : 'secondary'}
-            onClick={() => setGuidesMode(true)}
-          >
-            Guias
-          </button>
+      <Accordion title="Modo">
+        <div>
+          <label>Visualização</label>
+          <div className="mode-toggle">
+            <button
+              type="button"
+              className={guidesMode ? 'secondary' : ''}
+              onClick={() => setGuidesMode(false)}
+            >
+              Design
+            </button>
+            <button
+              type="button"
+              className={guidesMode ? '' : 'secondary'}
+              onClick={() => setGuidesMode(true)}
+            >
+              Guias
+            </button>
+          </div>
+          {guidesMode && (
+            <p className="hint">
+              Mostra caixas no lugar dos assets e exporta só o vetor (PDF) para montar no Illustrator.
+            </p>
+          )}
         </div>
-        {guidesMode && (
-          <p className="hint">
-            Mostra caixas no lugar dos assets e exporta só o vetor (PDF) para montar no Illustrator.
-          </p>
-        )}
-      </section>
-
-      <section className="left-panel__section">
         <label className="checkbox-row">
           <input type="checkbox" checked={debugMode} onChange={toggleDebug} />
           Modo debug
         </label>
-      </section>
+      </Accordion>
 
       {frames.length > 0 && (
-        <section className="left-panel__section left-panel__frames">
-          <h2>Frames ({frames.length})</h2>
+        <Accordion title={`Frames (${frames.length})`} className="left-panel__frames">
           <ul className="frame-list">
             {frames.map((f) => (
               <li
@@ -213,14 +211,11 @@ export function LeftPanel() {
               </li>
             ))}
           </ul>
-
-        </section>
+        </Accordion>
       )}
 
       {selectedFrames.length > 0 && (
-        <section className="left-panel__section left-panel__selection">
-          <h2>Seleção ({selectedFrames.length})</h2>
-
+        <Accordion title={`Seleção (${selectedFrames.length})`} className="left-panel__selection">
           <ul className="selection-photo-grid">
             {selectedFrames.map((f) => (
               <li key={f.id}>
@@ -277,14 +272,13 @@ export function LeftPanel() {
               </button>
             </div>
           </div>
-        </section>
+        </Accordion>
       )}
 
       {selectedFrame && (
-        <section className="left-panel__section left-panel__overrides">
-          <h2>Ajustes do frame</h2>
+        <Accordion title="Ajustes do frame" className="left-panel__overrides">
           <OverridesEditor frame={selectedFrame} />
-        </section>
+        </Accordion>
       )}
     </div>
   )

@@ -59,18 +59,6 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   })
 }
 
-/** Replicates the on-screen object-fit:cover + centered scale/pan for export, which has no native object-fit. */
-function photoDisplayRect(frame: Frame, photoArea: Rect) {
-  if (!frame.photo) return null
-  const base = coverScale(photoArea, frame.photo.naturalWidth, frame.photo.naturalHeight)
-  const { scale, panX, panY } = frame.photo.transform
-  const width = frame.photo.naturalWidth * base * scale
-  const height = frame.photo.naturalHeight * base * scale
-  const x = photoArea.x + photoArea.width / 2 + panX - width / 2
-  const y = photoArea.y + photoArea.height / 2 + panY - height / 2
-  return { x, y, width, height }
-}
-
 function frameLayout(frame: Frame) {
   const { etiquetaAsset: etiqueta, taglineAsset: tagline, variant } = resolveFrameAssets(frame)
   const layout = computeLayout(frame.widthPx, frame.heightPx, frame.overrides, etiqueta.aspectRatio, tagline.aspectRatio)
@@ -120,8 +108,15 @@ async function drawPhotoInto(
   ctx.clip()
   if (frame.photo) {
     const img = await loadImage(frame.photo.src)
-    const rect = photoDisplayRect(frame, photoArea)!
-    ctx.drawImage(img, (rect.x - originX) * scale, (rect.y - originY) * scale, rect.width * scale, rect.height * scale)
+    const { scale: zoom, panX, panY, rotation } = frame.photo.transform
+    const base = coverScale(photoArea, frame.photo.naturalWidth, frame.photo.naturalHeight)
+    const w = frame.photo.naturalWidth * base * zoom
+    const h = frame.photo.naturalHeight * base * zoom
+    const cx = photoArea.x + photoArea.width / 2 + panX
+    const cy = photoArea.y + photoArea.height / 2 + panY
+    ctx.translate((cx - originX) * scale, (cy - originY) * scale)
+    ctx.rotate((rotation * Math.PI) / 180)
+    ctx.drawImage(img, (-w / 2) * scale, (-h / 2) * scale, w * scale, h * scale)
   } else {
     ctx.fillStyle = PLACEHOLDER_GRAY
     ctx.fillRect((destRect.x - originX) * scale, (destRect.y - originY) * scale, destRect.width * scale, destRect.height * scale)

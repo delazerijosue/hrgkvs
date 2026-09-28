@@ -1,0 +1,67 @@
+.accordion {
+  border-top: 1px solid var(--color-border);
+}
+
+.accordion__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 14px 16px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8fa2ab;
+  font-weight: 600;
+}
+
+.accordion__header:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text);
+}
+
+.accordion__title {
+  text-align: left;
+}
+
+.accordion__chevron {
+  flex-shrink: 0;
+  display: inline-block;
+  font-size: 14px;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.accordion__chevron--open {
+  transform: rotate(90deg);
+}
+
+.accordion__body {
+  padding: 0 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Nested accordion (e.g. inside "Ajustes do frame") — flatten its own top border/padding so it doesn't double up against the parent's. */
+.accordion__body > .accordion:first-child {
+  border-top: none;
+}
+
+.accordion__body .accordion {
+  margin: 0 -16px;
+}
+
+.accordion__body .accordion .accordion__header {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.accordion__body .accordion .accordion__body {
+  padding-left: 16px;
+  padding-right: 16px;
+}
