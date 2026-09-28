@@ -47,7 +47,7 @@
   display: none;
 }
 
-.rotation-control {
+.slider-control {
   display: flex;
   flex-direction: column;
   gap: 6px;

@@ -121,7 +121,7 @@ export function OverridesEditor({ frame }: { frame: Frame }) {
 
         {frame.photo && (
           <>
-            <div>
+            <div className="slider-control">
               <label>Zoom</label>
               <input
                 type="range"
@@ -132,8 +132,17 @@ export function OverridesEditor({ frame }: { frame: Frame }) {
                 onFocus={() => snapshot()}
                 onChange={(e) => onPhotoZoom(Number(e.target.value))}
               />
+              <input
+                type="number"
+                step={0.01}
+                min={1}
+                max={MAX_PHOTO_ZOOM}
+                value={Math.round(frame.photo.transform.scale * 100) / 100}
+                onFocus={() => snapshot()}
+                onChange={(e) => onPhotoZoom(Number(e.target.value))}
+              />
             </div>
-            <div className="rotation-control">
+            <div className="slider-control">
               <label>Rotação (°)</label>
               <input
                 type="range"
