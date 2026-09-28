@@ -3,7 +3,7 @@ import './Accordion.css'
 
 export function Accordion({
   title,
-  defaultOpen = true,
+  defaultOpen = false,
   className,
   children,
 }: {

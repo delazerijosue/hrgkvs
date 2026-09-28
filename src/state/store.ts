@@ -90,8 +90,38 @@ function nextFramePosition(frames: Frame[]): { x: number; y: number } {
   return { x: last.canvasX + last.widthPx + NEW_FRAME_GAP, y: last.canvasY }
 }
 
+const DEFAULT_FRAME_SIZES: { width: number; height: number }[] = [
+  { width: 1080, height: 1350 },
+  { width: 1080, height: 1920 },
+  { width: 1920, height: 1080 },
+  { width: 600, height: 1800 },
+]
+
+function createDefaultFrames(): Frame[] {
+  const frames: Frame[] = []
+  DEFAULT_FRAME_SIZES.forEach(({ width, height }, i) => {
+    const { x, y } = nextFramePosition(frames)
+    frames.push({
+      id: nanoid(),
+      name: `Frame ${i + 1}`,
+      widthPx: toPx(width, 'px'),
+      heightPx: toPx(height, 'px'),
+      inputWidth: width,
+      inputHeight: height,
+      unit: 'px',
+      canvasX: x,
+      canvasY: y,
+      overrides: defaultOverrides(),
+      photo: null,
+      customEtiqueta: null,
+      customTagline: null,
+    })
+  })
+  return frames
+}
+
 export const useStore = create<AppState>((set, get) => ({
-  frames: [],
+  frames: createDefaultFrames(),
   selectedFrameIds: [],
   clipboard: [],
   guidesMode: false,

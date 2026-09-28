@@ -20,6 +20,10 @@ body,
   margin: 0;
 }
 
+html {
+  zoom: 90%;
+}
+
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--color-canvas-bg);
