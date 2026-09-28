@@ -106,7 +106,9 @@ export function FrameView({ frame }: { frame: Frame }) {
 
       {debugMode && isSelected && <DebugOverlay frame={frame} layout={layout} />}
 
-      <div className="frame__label">{getFrameLabel(frame)}</div>
+      <div className="frame__label" style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'bottom left' }}>
+        {getFrameLabel(frame)}
+      </div>
     </div>
   )
 }

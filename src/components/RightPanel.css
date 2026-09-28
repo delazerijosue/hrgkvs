@@ -4,24 +4,24 @@
   height: 100vh;
   background: var(--color-panel-bg);
   border-left: 1px solid var(--color-border);
-  padding: 16px;
+  padding: 14px;
   overflow-y: auto;
 }
 
 .right-panel h2 {
-  font-size: 15px;
-  margin: 0 0 16px;
+  font-size: 14px;
+  margin: 0 0 14px;
 }
 
 .details-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin: 0 0 20px;
+  gap: 9px;
+  margin: 0 0 18px;
 }
 
 .details-list dt {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #8fa2ab;
@@ -29,5 +29,5 @@
 
 .details-list dd {
   margin: 2px 0 0;
-  font-size: 13px;
+  font-size: 12px;
 }

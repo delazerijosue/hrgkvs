@@ -26,9 +26,13 @@
   bottom: 100%;
   left: 0;
   margin-bottom: 6px;
-  font-size: 12px;
+  font-size: 16px;
+  font-weight: 600;
   color: #8fa2ab;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
   pointer-events: none;
 }
 

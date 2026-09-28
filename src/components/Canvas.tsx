@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, type PointerEvent, type WheelEvent } from 'react'
+import { useRef, useState, useCallback, useEffect, type PointerEvent, type WheelEvent } from 'react'
 import { useStore } from '../state/store'
 import { FrameView } from './FrameView'
 import './Canvas.css'
@@ -35,6 +35,30 @@ export function Canvas() {
   const dragRef = useRef<DragState | null>(null)
   const [marqueeRect, setMarqueeRect] = useState<ScreenRect | null>(null)
   const [isPanning, setIsPanning] = useState(false)
+
+  // No primeiro carregamento, enquadra todos os frames existentes (os 4 formatos padrão) na tela.
+  useEffect(() => {
+    const rect = viewportRef.current?.getBoundingClientRect()
+    if (!rect || frames.length === 0) return
+    const FIT_PADDING = 80
+    const minX = Math.min(...frames.map((f) => f.canvasX))
+    const minY = Math.min(...frames.map((f) => f.canvasY))
+    const maxX = Math.max(...frames.map((f) => f.canvasX + f.widthPx))
+    const maxY = Math.max(...frames.map((f) => f.canvasY + f.heightPx))
+    const contentWidth = maxX - minX
+    const contentHeight = maxY - minY
+    const zoom = clamp(
+      Math.min((rect.width - FIT_PADDING * 2) / contentWidth, (rect.height - FIT_PADDING * 2) / contentHeight),
+      MIN_ZOOM,
+      1,
+    )
+    setCanvasView({
+      zoom,
+      x: (rect.width - contentWidth * zoom) / 2 - minX * zoom,
+      y: (rect.height - contentHeight * zoom) / 2 - minY * zoom,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const onWheel = useCallback(
     (e: WheelEvent<HTMLDivElement>) => {

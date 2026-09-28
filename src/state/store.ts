@@ -82,7 +82,7 @@ interface AppState {
   setCanvasView: (view: Partial<CanvasView>) => void
 }
 
-const NEW_FRAME_GAP = 80
+const NEW_FRAME_GAP = 160
 
 function nextFramePosition(frames: Frame[]): { x: number; y: number } {
   if (frames.length === 0) return { x: 0, y: 0 }

@@ -5,42 +5,42 @@
 
 .variant-toggle {
   display: flex;
-  gap: 6px;
+  gap: 5px;
 }
 
 .variant-toggle button {
   flex: 1;
-  font-size: 11px;
-  padding: 6px 4px;
+  font-size: 10px;
+  padding: 5px 4px;
 }
 
 .reset-btn {
-  font-size: 11px;
-  padding: 5px 8px;
+  font-size: 10px;
+  padding: 5px 7px;
   align-self: flex-start;
 }
 
 .hint {
-  font-size: 11px;
+  font-size: 10px;
   color: #8fa2ab;
   margin: 0;
 }
 
 .asset-status {
-  font-size: 11px;
+  font-size: 10px;
   color: #8fa2ab;
   margin: 0;
 }
 
 .asset-actions {
   display: flex;
-  gap: 6px;
+  gap: 5px;
 }
 
 .asset-actions button {
   flex: 1;
-  font-size: 11px;
-  padding: 6px 4px;
+  font-size: 10px;
+  padding: 5px 4px;
 }
 
 .hidden-input {
@@ -50,5 +50,5 @@
 .slider-control {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }

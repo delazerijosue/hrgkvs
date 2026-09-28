@@ -20,10 +20,6 @@ body,
   margin: 0;
 }
 
-html {
-  zoom: 90%;
-}
-
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--color-canvas-bg);
@@ -44,8 +40,8 @@ button {
   background: var(--color-accent);
   color: #fff;
   border-radius: 6px;
-  padding: 8px 14px;
-  font-size: 13px;
+  padding: 7px 13px;
+  font-size: 12px;
   font-weight: 600;
   transition: background 0.15s ease;
 }
@@ -76,8 +72,8 @@ select {
   background: #0d151a;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  padding: 6px 8px;
-  font-size: 13px;
+  padding: 5px 7px;
+  font-size: 12px;
   width: 100%;
 }
 
@@ -86,7 +82,7 @@ input[type='range'] {
 }
 
 label {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: #8fa2ab;
